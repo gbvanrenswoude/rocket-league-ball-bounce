@@ -1,0 +1,31 @@
+const double R = 91.25;
+const double Y = 2.0;
+const double mu = 0.285;
+const double C_R = 0.6;
+const double A = 0.0003;
+
+struct state {
+  vec3 x; // position
+  vec3 v; // velocity
+  vec3 w; // angular velocity
+};
+
+state bounce(state current, vec3 n) {
+   
+  vec3 v_perp = dot(current.v, n) * n;
+  vec3 v_para = current.v - v_perp;
+  vec3 v_spin = R * cross(n, current.w);
+  vec3 s = v_para + v_spin;
+   
+  double ratio = length(v_perp) / length(s);
+   
+  vec3 delta_v_perp = - (1.0 + C_R) * v_perp;
+  vec3 delta_v_para = - fmin(1.0, Y * ratio) * mu * s;
+   
+  return state{
+    current.x,
+    current.v + delta_v_perp + delta_v_para,
+    current.w + A * R * cross(delta_v_para, n)
+  };  
+   
+}
